@@ -1,11 +1,12 @@
 /* helpers/Html.js */
 
-import React, {Component, PropTypes} from "react";
+import React, { Component } from "react";
 import ReactDOM from "react-dom/server";
+import PropTypes from "prop-types";
 import serialize from "serialize-javascript";
 import Helmet from "react-helmet";
 
-import staticPath, {STATIC_PREFIX} from "../utils/static.js";
+import staticPath, { STATIC_PREFIX } from "../../lib/utils/static.js";
 
 import Favicons from "./Favicons.js";
 
@@ -54,6 +55,7 @@ export default class Html extends Component {
                     {/* Set global variables */}
                     <script dangerouslySetInnerHTML={{__html: `window.__static="${STATIC_PREFIX}";`}} charSet="UTF-8" />
                     <script dangerouslySetInnerHTML={{__html: `window.__api="${process.env.API_URL}";`}} charSet="UTF-8" />
+                    <script dangerouslySetInnerHTML={{__html: `window.__ws="${process.env.WS_URL}";`}} charSet="UTF-8" />
 
                     {/* Save store data for rehydration */}
                     {store ? (

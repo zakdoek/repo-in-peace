@@ -37,3 +37,5 @@ export PATH=$(getRoot)/bin:$PATH
 # Setup dev environment
 export PORT=3000
 export STATIC_URL="/static"
+export API_URL="http://localhost:$PORT/graphql"
+export WS_URL="ws://localhost:$PORT/subscriptions"
