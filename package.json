@@ -65,5 +65,16 @@
     "universal-webpack": "^0.3.11",
     "warning": "^3.0.0",
     "webpack": "^3.5.5"
+  },
+  "devDependencies": {
+    "babel-jest": "^20.0.3",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^20.0.4"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/__mocks__/fileMock.js",
+      "\\.(css|less)$": "identity-obj-proxy"
+    }
   }
 }
