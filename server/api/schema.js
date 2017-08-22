@@ -10,10 +10,6 @@ enum VoteType {
     DOWNVOTE
 }
 
-input VoteInput {
-    repoId: ID!
-    value: VoteType!
-}
 
 type Repo {
     id: ID!                 # Repo ID
@@ -32,6 +28,12 @@ type User {
     downvoted: [Repo!]      # Downvoted repos
 }
 
+# A helper to bundle token and user info
+type UserLogin {
+    user: User!
+    token: String!
+}
+
 # Will be embedded into the repo object
 type Vote {
     id: ID!                 # Id (not neccesary, revisit)
@@ -46,6 +48,11 @@ type Query {
     repos: [Repo!]!         # List of all repos
 }
 
+input VoteInput {
+    repoId: ID!
+    value: VoteType!
+}
+
 type Mutation {
     # Add a repo, user id comes from token
     addRepo(url: String!): Repo
@@ -53,6 +60,8 @@ type Mutation {
     vote(vote: VoteInput!): Vote
     # Clear own vote for value
     clearVote(repoId: ID!): Repo
+    # Create/Login user, return token
+    login(name: String!): UserLogin
 }
 
 type Subscription {
