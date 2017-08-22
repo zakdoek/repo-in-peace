@@ -16,6 +16,7 @@ import { createServer } from "http";
 import { SubscriptionServer } from "subscriptions-transport-ws";
 import passport from "passport";
 import { Strategy, ExtractJwt } from "passport-jwt";
+import mongoose from "mongoose";
 
 import createStore from "../lib/redux/create.js";
 import App from "../lib/containers/App/App.js";
@@ -31,10 +32,16 @@ const STATIC_DIR = path.resolve(__dirname, "../client");
  * Server
  */
 export default function() {
+    // Check if secret is present or crash
+    if (!process.env.JWT_SECRET) {
+        console.error("JWT_SECRET not set, can't start!");
+        return;
+    }
+
     // Set passport strategy
     passport.use(new Strategy({
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-        secretOrKey: process.env.JWT_SECRET || "development",
+        secretOrKey: process.env.JWT_SECRET,
     }, (payload, done) => done(null, payload)));
 
     // Create server instance
@@ -111,19 +118,35 @@ export default function() {
         );
     });
 
-    // Start listening
+    // Wrap express server to support websockets
     const ws = createServer(app);
-    ws.listen(process.env.PORT, () => {
-        console.log(`Listening for requests on port ${process.env.PORT}...`);
 
-        // Set up the WebSocket for handling GraphQL subscriptions
-        new SubscriptionServer({
-            execute,
-            subscribe,
-            schema
-        }, {
-            server: ws,
-            path: "/subscriptions",
+    // Connect to database
+    mongoose.connect(process.env.MONGO_URL);
+    const db = mongoose.connection;
+
+    /* eslint no-console: 0 */
+    db.on("error", () => {
+        console.error(`Could not connect to ${process.env.MONGO_URL}!`);
+    });
+
+    console.log(`Connecting to ${process.env.MONGO}...`);
+    // Once connected to mongo...
+    db.once("open", () => {
+        // Start listening
+        ws.listen(process.env.PORT, () => {
+            console.log(
+                `Listening for requests on port ${process.env.PORT}...`);
+
+            // Set up the WebSocket for handling GraphQL subscriptions
+            new SubscriptionServer({
+                execute,
+                subscribe,
+                schema
+            }, {
+                server: ws,
+                path: "/subscriptions",
+            });
         });
     });
 }

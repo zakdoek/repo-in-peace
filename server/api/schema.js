@@ -15,9 +15,10 @@ type Repo {
     id: ID!                 # Repo ID
     url: String!            # Repo url
     owner: User!            # Creating user
-    upvoteds: [User!]       # Upvoted by
+    upvotes: [User!]        # Upvoted by
     downvotes: [User!]      # Downvoted by
     createdAt:  Int!        # Time created
+    updatedAt:  Int!        # Time created
 }
 
 type User {
@@ -37,11 +38,10 @@ type UserLogin {
 # Will be embedded into the repo object
 type Vote {
     id: ID!                 # Id (not neccesary, revisit)
-    repo: Repo!             # Repo subject of this vote
     user: User!             # User that created the vote
+    value: VoteType!        # The value of this vote
     createdAt: Int!         # Created timestamp
     updatedAt: Int!         # Last updated timestamp
-    value: VoteType!        # The value of this vote
 }
 
 type Query {
@@ -66,11 +66,11 @@ type Mutation {
 
 type Subscription {
     # Notify when added
-    repoAdded(): Repo
+    repoAdded: Repo
     # Notify when a vote is changed on selected repo
     votesChanged(repoId: ID!): Vote
     # Notify when votes on a repo owned by user is changed
-    ownedChanged(): Vote
+    ownedChanged: Vote
 }
 `;
 
