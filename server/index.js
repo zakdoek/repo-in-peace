@@ -14,6 +14,8 @@ import { execute, subscribe } from "graphql";
 import { graphqlExpress, graphiqlExpress } from "graphql-server-express";
 import { createServer } from "http";
 import { SubscriptionServer } from "subscriptions-transport-ws";
+import passport from "passport";
+import { Strategy, ExtractJwt } from "passport-jwt";
 
 import createStore from "../lib/redux/create.js";
 import App from "../lib/containers/App/App.js";
@@ -29,6 +31,12 @@ const STATIC_DIR = path.resolve(__dirname, "../client");
  * Server
  */
 export default function() {
+    // Set passport strategy
+    passport.use(new Strategy({
+        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+        secretOrKey: process.env.JWT_SECRET || "development",
+    }, (payload, done) => done(null, payload)));
+
     // Create server instance
     const app = express();
 
@@ -42,9 +50,14 @@ export default function() {
     app.use("/static/", express.static(STATIC_DIR));
 
     // Add api server
-    app.use("/graphql", bodyParser.json(), graphqlExpress({
-        schema,
-    }));
+    app.use(
+        "/graphql",
+        passport.authenticate("jwt", { session: false }),
+        bodyParser.json(),
+        graphqlExpress({
+            schema,
+        }),
+    );
 
     if (__DEVELOPMENT__) {
         app.use("/graphiql", graphiqlExpress({
