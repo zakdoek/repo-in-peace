@@ -11,7 +11,7 @@ import { renderToString } from "react-dom/server";
 import { ApolloClient, createNetworkInterface } from "react-apollo";
 import bodyParser from "body-parser";
 import { execute, subscribe } from "graphql";
-import { graphqlExpress, graphiqlExpress } from "graphql-server-express";
+import { graphqlExpress } from "graphql-server-express";
 import { createServer } from "http";
 import { SubscriptionServer } from "subscriptions-transport-ws";
 import passport from "passport";
@@ -83,13 +83,6 @@ export default function() {
             context: { user: req.user },
         })),
     );
-
-    if (__DEVELOPMENT__) {
-        app.use("/graphiql", graphiqlExpress({
-            endpointURL: process.env.API_URL,
-            subscriptionsEndpoint: process.env.WS_URL,
-        }));
-    }
 
     // Dummy
     app.get(/.*/, (req, res) => {
