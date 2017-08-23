@@ -69,6 +69,8 @@ type Mutation {
 type Subscription {
     # Notify when added
     repoAdded: Repo
+    # Repo updated, (i.e name fetched from the github)
+    repoUpdated(repoId: ID!): Repo
     # Notify when a vote is changed on selected repo
     votesChanged(repoId: ID!): Vote
     # Notify when votes on a repo owned by user is changed
