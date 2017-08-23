@@ -13,6 +13,8 @@ enum VoteType {
 type Repo {
     id: ID!                 # Repo ID
     url: String!            # Repo url
+    name: String            # Name of the repo, optional until fetch from github
+                            # api
     owner: User!            # Creating user
     upvotes: [Vote!]        # Upvoted by
     downvotes: [Vote!]      # Downvoted by
@@ -23,6 +25,7 @@ type Repo {
 type User {
     id: ID!                 # User ID
     name: String!           # User name
+    username: String!       # Normalized name
     repos: [Repo!]          # Repositories owned by self
     upvoted: [Vote!]        # Upvoted repos
     downvoted: [Vote!]      # Downvoted repos

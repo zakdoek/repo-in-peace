@@ -1,36 +1,18 @@
 /* server/api/resolvers/index.js */
 
-import Repo from "../models/Repo.js";
-
+import addRepo from "./Mutation/addRepo.js";
+import login from "./Mutation/login.js";
+import repos from "./Query/repos.js";
+import User from "./User.js";
 
 export default {
+    User,
     Query: {
-        repos: () => Repo.find({}).populate("owner").populate({
-            path: "votes",
-            populate: {
-                path: "user",
-            },
-        }).then(repos => {
-            // Construct gql objects
-            return repos;
-        }),
+        repos,
     },
     Mutation: {
-        addRepo(_, { url }, { req: { user } }) {
-            if (!user || !user.id) {
-                throw new Error("Must be authenticated to post a repo!");
-            }
-
-            const newRepo = new Repo({
-                url,
-                owner: user.id,
-            });
-            newRepo.save();
-
-            return newRepo;
-        },
+        addRepo,
+        login,
     },
-    Subscription: {
-
-    },
+    Subscription: {},
 };

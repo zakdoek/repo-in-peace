@@ -62,9 +62,10 @@ export default function() {
         "/graphql",
         bodyParser.json(),
         passport.authenticate("jwt", { session: false }),
-        graphqlExpress({
+        graphqlExpress(req => ({
             schema,
-        }),
+            context: { user: req.user },
+        })),
     );
 
     if (__DEVELOPMENT__) {

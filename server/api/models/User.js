@@ -1,16 +1,18 @@
 /* server/api/models/User.js */
 
-import { model, Schema, Model } from "mongoose";
+import mongoose, { Schema, Model } from "mongoose";
 import { sign } from "jsonwebtoken";
+import slugify from "speakingurl";
 
 
 /**
  * The User schema
  */
 const UserSchema = new Schema({
-    _id: Schema.Types.ObjectId,
+    _id: { type: Schema.Types.ObjectId, auto: true },
     name: String,
-});
+    username: String,
+}, { timestamps: true });
 
 
 /**
@@ -25,9 +27,21 @@ class User extends Model {
         return sign({
             id: this.id,
             name: this.name,
+            username: this.username,
         }, process.env.JWT_SECRET);
+    }
+
+    /**
+     * Save instance
+     */
+    save(...args) {
+        // Ensure username from name
+        if (!this.username) {
+            this.username = slugify(this.name, "");
+        }
+        return super.save(...args);
     }
 }
 
 
-export default model(User, UserSchema, "users");
+export default mongoose.model(User, UserSchema, "users");
