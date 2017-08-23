@@ -10,13 +10,12 @@ enum VoteType {
     DOWNVOTE
 }
 
-
 type Repo {
     id: ID!                 # Repo ID
     url: String!            # Repo url
     owner: User!            # Creating user
-    upvotes: [User!]        # Upvoted by
-    downvotes: [User!]      # Downvoted by
+    upvotes: [Vote!]        # Upvoted by
+    downvotes: [Vote!]      # Downvoted by
     createdAt:  Int!        # Time created
     updatedAt:  Int!        # Time created
 }
@@ -25,8 +24,8 @@ type User {
     id: ID!                 # User ID
     name: String!           # User name
     repos: [Repo!]          # Repositories owned by self
-    upvoted: [Repo!]        # Upvoted repos
-    downvoted: [Repo!]      # Downvoted repos
+    upvoted: [Vote!]        # Upvoted repos
+    downvoted: [Vote!]      # Downvoted repos
 }
 
 # A helper to bundle token and user info
@@ -44,13 +43,13 @@ type Vote {
     updatedAt: Int!         # Last updated timestamp
 }
 
-type Query {
-    repos: [Repo!]!         # List of all repos
-}
-
 input VoteInput {
     repoId: ID!
     value: VoteType!
+}
+
+type Query {
+    repos: [Repo!]!         # List of all repos
 }
 
 type Mutation {

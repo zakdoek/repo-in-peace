@@ -25,9 +25,6 @@ function activateNode() {
     export PATH=$(yarn bin):$PATH
 }
 
-# Spin up services
-docker-compose up -d
-
 # Select the node environment
 nvm use
 
@@ -42,5 +39,5 @@ export PORT=3000
 export STATIC_URL="/static"
 export API_URL="http://localhost:$PORT/graphql"
 export WS_URL="ws://localhost:$PORT/subscriptions"
-export MONGO_URL="mongo://$(docker-compose port redis 27017)/db"
+export MONGO_URL="mongodb://127.0.0.1:${$(docker-compose port mongo 27017)##*:}/db"
 export JWT_SECRET="secret"

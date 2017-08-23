@@ -15,12 +15,13 @@ import { graphqlExpress, graphiqlExpress } from "graphql-server-express";
 import { createServer } from "http";
 import { SubscriptionServer } from "subscriptions-transport-ws";
 import passport from "passport";
-import { Strategy, ExtractJwt } from "passport-jwt";
+import { ExtractJwt } from "passport-jwt";
 import mongoose from "mongoose";
 
 import createStore from "../lib/redux/create.js";
 import App from "../lib/containers/App/App.js";
 
+import Strategy from "./utils/OptionalJwtStrategy.js";
 import Html from "./utils/Html.js";
 import { schema } from "./api/schema.js";
 
@@ -59,8 +60,8 @@ export default function() {
     // Add api server
     app.use(
         "/graphql",
-        passport.authenticate("jwt", { session: false }),
         bodyParser.json(),
+        passport.authenticate("jwt", { session: false }),
         graphqlExpress({
             schema,
         }),
@@ -121,18 +122,14 @@ export default function() {
     // Wrap express server to support websockets
     const ws = createServer(app);
 
+    // Use native promises
+    mongoose.Promise = global.Promise;
     // Connect to database
-    mongoose.connect(process.env.MONGO_URL);
-    const db = mongoose.connection;
-
     /* eslint no-console: 0 */
-    db.on("error", () => {
-        console.error(`Could not connect to ${process.env.MONGO_URL}!`);
-    });
-
-    console.log(`Connecting to ${process.env.MONGO}...`);
-    // Once connected to mongo...
-    db.once("open", () => {
+    console.log(`Connecting to ${process.env.MONGO_URL}...`);
+    mongoose.connect(process.env.MONGO_URL, {
+        useMongoClient: true,
+    }).then(() => {
         // Start listening
         ws.listen(process.env.PORT, () => {
             console.log(
@@ -148,5 +145,7 @@ export default function() {
                 path: "/subscriptions",
             });
         });
+    }).catch(() => {
+        console.error(`Could not connect to ${process.env.MONGO_URL}!`);
     });
 }

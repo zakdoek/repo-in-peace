@@ -1,6 +1,6 @@
 /* server/api/models/Repo.js */
 
-import { model, Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 
 /**
@@ -24,4 +24,4 @@ const RepoSchema = new Schema({
 }, { timestamps: true });
 
 
-export default model("Repo", RepoSchema, "repos");
+export default mongoose.model("Repo", RepoSchema, "repos");
