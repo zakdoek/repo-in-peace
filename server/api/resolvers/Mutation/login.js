@@ -8,14 +8,7 @@ import UserModel from "../../models/User.js";
 /**
  * Login mutation
  */
-export default function login(_, { name }, { user }) {
-    if (user && user.name != name) {
-        throw new Error(
-            "Already logged in with another user, " +
-            "please logout first.",
-        );
-    }
-
+export default function login(_, { name }) {
     return UserModel.findOne({
         username: slugify(name, ""),
     }).then(userDoc => {
