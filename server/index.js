@@ -17,6 +17,7 @@ import { SubscriptionServer } from "subscriptions-transport-ws";
 import passport from "passport";
 import { ExtractJwt } from "passport-jwt";
 import mongoose from "mongoose";
+import cors from "cors";
 
 import createStore from "../lib/redux/create.js";
 import App from "../lib/containers/App/App.js";
@@ -27,6 +28,8 @@ import { schema } from "./api/schema.js";
 
 const LOG_FORMAT = process.env.NODE_ENV === "production" ? "combined" : "dev";
 const STATIC_DIR = path.resolve(__dirname, "../client");
+const API_CORS_WHITELIST = process.env.API_CORS_WHITELIST || (
+    __DEVELOPMENT__ ? "*" : "");
 
 
 /**
@@ -47,6 +50,19 @@ export default function() {
 
     // Create server instance
     const app = express();
+
+    // Check for cors whitelist
+    app.use(cors({
+        origin(requesting, done) {
+            if (API_CORS_WHITELIST === "*" ||
+                    API_CORS_WHITELIST.indexOf(requesting) >= 0) {
+                done(null, true);
+            } else {
+                done(new Error("Not allowed by CORS"));
+            }
+        },
+        credentials: true,
+    }));
 
     // Enable logging to STDOUT
     app.use(morgan(LOG_FORMAT));
