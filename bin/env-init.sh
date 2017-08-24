@@ -34,15 +34,18 @@ activateNode
 # Set bin dir for tooling
 export PATH=$(getRoot)/bin:$PATH
 
-# Setup dev environment
+# Front server envs
 export PORT=3000
 export STATIC_URL="/static"
-export API_URL="http://localhost:$PORT/graphql"
 export FRONT_URL="http://localhost:$PORT"
-export WS_URL="ws://localhost:$PORT/subscriptions"
-export MONGO_URL="mongodb://127.0.0.1:${$(docker-compose port mongo 27017)##*:}/db"
-export JWT_SECRET="secret"
-export API_CORS_WHITELIST="*"
 export GITHUB_CLIENT_ID="$REPO_IN_PEACE_GH_ID"
 export GITHUB_CLIENT_SECRET="$REPO_IN_PEACE_GH_SECRET"
 export SESSION_SECRET="secret"
+
+# Api server envs
+export API_PORT=4000
+export API_URL="http://localhost:$API_PORT/graphql"
+export API_WS_URL="ws://localhost:$API_PORT/subscriptions"
+export API_MONGO_URL="mongodb://127.0.0.1:${$(docker-compose port mongo 27017)##*:}/db"
+export API_JWT_SECRET="secret"
+export API_CORS_WHITELIST="*"
