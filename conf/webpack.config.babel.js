@@ -1,4 +1,4 @@
-/* webpack.config.js */
+/* conf/webpack.config.babel.js */
 import path from "path";
 import ExtractTextPlugin from "extract-text-webpack-plugin";
 import StyleLintPlugin from "stylelint-webpack-plugin";

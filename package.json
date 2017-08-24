@@ -5,10 +5,12 @@
   "author": "Tom Van Damme <tom.vandamme@ida-mediafoundry.be>",
   "license": "MIT",
   "scripts": {
-    "build": "NODE_ENV=production webpack -p --config conf/webpack.config.server.babel.js && NODE_ENV=production webpack -p --config conf/webpack.config.client.babel.js",
+    "build": "NODE_ENV=production webpack -p --config conf/webpack.config.server.babel.js && NODE_ENV=production webpack -p --config conf/webpack.config.client.babel.js && NODE_ENV=production webpack -p --config conf/webpack.config.client.babel.js",
     "watchclient": "NODE_ENV=development webpack -w --config conf/webpack.config.client.babel.js",
     "watchserver": "NODE_ENV=development webpack -w --config conf/webpack.config.server.babel.js",
-    "runserver": "NODE_ENV=development nodemon -w build/server -x bin/server.babel.js"
+    "watchapi": "NODE_ENV=development webpack -w --config conf/webpack.config.api.babel.js",
+    "runserver": "NODE_ENV=development nodemon -w build/server -x bin/server.babel.js",
+    "runapiserver": "NODE_ENV=development nodemon -w build/api -x bin/api.babel.js"
   },
   "dependencies": {
     "autoprefixer": "^7.1.2",

@@ -55,7 +55,7 @@ export default class Html extends Component {
                     {/* Set global variables */}
                     <script dangerouslySetInnerHTML={{__html: `window.__static="${STATIC_PREFIX}";`}} charSet="UTF-8" />
                     <script dangerouslySetInnerHTML={{__html: `window.__api="${process.env.API_URL}";`}} charSet="UTF-8" />
-                    <script dangerouslySetInnerHTML={{__html: `window.__ws="${process.env.WS_URL}";`}} charSet="UTF-8" />
+                    <script dangerouslySetInnerHTML={{__html: `window.__ws="${process.env.API_WS_URL}";`}} charSet="UTF-8" />
 
                     {/* Save store data for rehydration */}
                     {store ? (

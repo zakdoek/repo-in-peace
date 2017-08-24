@@ -10,40 +10,23 @@ import morgan from "morgan";
 import React from "react";
 import { renderToString } from "react-dom/server";
 import { ApolloClient, createNetworkInterface } from "react-apollo";
-import bodyParser from "body-parser";
-import { execute, subscribe } from "graphql";
-import { graphqlExpress } from "graphql-server-express";
-import { createServer } from "http";
-import { SubscriptionServer } from "subscriptions-transport-ws";
 import passport from "passport";
-import { ExtractJwt } from "passport-jwt";
-import mongoose from "mongoose";
-import cors from "cors";
 import { Strategy as GitHubStrategy } from "passport-github2";
 import cookieSession from "cookie-session";
 
 import createStore from "../lib/redux/create.js";
 import App from "../lib/containers/App/App.js";
 
-import Strategy from "./utils/OptionalJwtStrategy.js";
 import Html from "./utils/Html.js";
-import { schema } from "./api/schema.js";
 
 const LOG_FORMAT = process.env.NODE_ENV === "production" ? "combined" : "dev";
 const STATIC_DIR = path.resolve(__dirname, "../client");
-const API_CORS_WHITELIST = process.env.API_CORS_WHITELIST || (
-    __DEVELOPMENT__ ? "*" : "");
 
 
 /**
  * Server
  */
 export default function() {
-    // Check if secret is present or crash
-    if (!process.env.JWT_SECRET) {
-        console.error("JWT_SECRET not set, can't start!");
-        return;
-    }
 
     // Passport session serializers
     passport.serializeUser(function(user, done) {
@@ -62,27 +45,8 @@ export default function() {
         callbackURL: url.resolve(process.env.FRONT_URL, "auth/cb"),
     }, (accessToken, _, __, done) => done(null, accessToken)));
 
-    // Set passport strategy for the api
-    passport.use(new Strategy({
-        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-        secretOrKey: process.env.JWT_SECRET,
-    }, (payload, done) => done(null, payload)));
-
     // Create server instance
     const app = express();
-
-    // Check for cors whitelist
-    app.use(cors({
-        origin(requesting, done) {
-            if (API_CORS_WHITELIST === "*" ||
-                    API_CORS_WHITELIST.indexOf(requesting) >= 0) {
-                done(null, true);
-            } else {
-                done(new Error("Not allowed by CORS"));
-            }
-        },
-        credentials: true,
-    }));
 
     // Enable logging to STDOUT
     app.use(morgan(LOG_FORMAT));
@@ -106,17 +70,6 @@ export default function() {
     // persistent login sessions (recommended).
     app.use(passport.initialize());
     app.use(passport.session());
-
-    // Add api server
-    app.use(
-        "/graphql",
-        bodyParser.json(),
-        passport.authenticate("jwt", { session: false }),
-        graphqlExpress(req => ({
-            schema,
-            context: { user: req.user },
-        })),
-    );
 
     // Front auth cb url
     app.get("/auth/cb",
@@ -200,33 +153,8 @@ export default function() {
         },
     );
 
-    // Wrap express server to support websockets
-    const ws = createServer(app);
-
-    // Use native promises
-    mongoose.Promise = global.Promise;
-    // Connect to database
-    /* eslint no-console: 0 */
-    console.log(`Connecting to ${process.env.MONGO_URL}...`);
-    mongoose.connect(process.env.MONGO_URL, {
-        useMongoClient: true,
-    }).then(() => {
-        // Start listening
-        ws.listen(process.env.PORT, () => {
-            console.log(
-                `Listening for requests on port ${process.env.PORT}...`);
-
-            // Set up the WebSocket for handling GraphQL subscriptions
-            new SubscriptionServer({
-                execute,
-                subscribe,
-                schema
-            }, {
-                server: ws,
-                path: "/subscriptions",
-            });
-        });
-    }).catch(() => {
-        console.error(`Could not connect to ${process.env.MONGO_URL}!`);
+    app.listen(process.env.PORT, () => {
+        /* eslint no-console: 0 */
+        console.log(`Listening for requests on port ${process.env.PORT}...`);
     });
 }
