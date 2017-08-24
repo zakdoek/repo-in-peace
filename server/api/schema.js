@@ -64,6 +64,7 @@ type Mutation {
     clearVote(repoId: ID!): Repo
     # Create/Login user, return token
     login(name: String!): UserLogin
+    # login(ghOAuthToken: String!): UserLogin
 }
 
 type Subscription {
