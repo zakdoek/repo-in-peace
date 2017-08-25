@@ -27,13 +27,18 @@ const networkInterface = addGraphQLSubscriptions(
 
 const client = new ApolloClient({ networkInterface });
 
-const ghToken = window.__extraData ? window.__extraData.ghToken : undefined;
+const ghUser = window.__extraData ? window.__extraData.ghUser : undefined;
 
 // Content
 const target = document.getElementById("content");
 
 // Render
 ReactDOM.render(
-    <App store={store} client={client} ghClient={getGitHubClient(ghToken)} />,
+    <App
+        store={store}
+        client={client}
+        ghClient={getGitHubClient(
+            ghUser ? ghUser.token || undefined : undefined)}
+    />,
     target,
 );

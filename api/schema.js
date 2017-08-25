@@ -32,8 +32,9 @@ type User {
 }
 
 # A helper to bundle token and user info
-type UserLogin {
-    user: User!
+type LoginResult {
+    id: ID!
+    username: String!
     token: String!
 }
 
@@ -63,8 +64,7 @@ type Mutation {
     # Clear own vote for value
     clearVote(repoId: ID!): Repo
     # Create/Login user, return token
-    login(name: String!): UserLogin
-    # login(ghOAuthToken: String!): UserLogin
+    login(ghToken: String!): LoginResult
 }
 
 type Subscription {

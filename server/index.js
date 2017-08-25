@@ -44,7 +44,10 @@ export default function() {
         clientID: process.env.GITHUB_CLIENT_ID,
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
         callbackURL: url.resolve(process.env.FRONT_URL, "auth/cb"),
-    }, (accessToken, _, __, done) => done(null, accessToken)));
+    }, (accessToken, _, { username }, done) => done(null, {
+        token: accessToken,
+        username,
+    })));
 
     // Create server instance
     const app = express();
@@ -139,7 +142,8 @@ export default function() {
                 <App
                     store={store}
                     client={client}
-                    ghClient={getGitHubClient(req.user || undefined)}
+                    ghClient={getGitHubClient(
+                        req.user ? req.user.token || undefined : undefined)}
                     routerProps={routerProps}
                 />
             );
@@ -153,7 +157,7 @@ export default function() {
             // Populate extradata
             const extraData = {};
             if (req.user) {
-                extraData.ghToken = req.user;
+                extraData.ghUser = req.user;
             }
 
             // Create output component

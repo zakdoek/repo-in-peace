@@ -1,6 +1,9 @@
 /* server/api/resolvers/Mutation/login.js */
 
-import slugify from "speakingurl";
+import gql from "graphql-tag";
+import { sign } from "jsonwebtoken";
+
+import getGitHubClient from "../../../lib/utils/getGitHubClient.js";
 
 import UserModel from "../../models/User.js";
 
@@ -8,24 +11,58 @@ import UserModel from "../../models/User.js";
 /**
  * Login mutation
  */
-export default function login(_, { name }) {
-    return UserModel.findOne({
-        username: slugify(name, ""),
-    }).then(userDoc => {
-        if (userDoc) {
-            // User is found, return data and token
-            return {
-                user: userDoc,
-                token: userDoc.token,
-            };
-        }
+export default function login(_, { ghToken }, { user }) {
+    // Try to fetch from JWT
+    if (user && user.profile && ghToken === user.profile.token) {
+        // Return unchanged
+        return {
+            id: user.profile.id,
+            username: user.profile.username,
+            token: user.jwToken,
+        };
+    }
 
-        // Create a user and return
-        return new UserModel({ name }).save().then(userDoc => {
-            return {
-                user: userDoc,
-                token: userDoc.token,
-            };
+    // Is not auth, try to auth => Check on ghToken validity
+    const ghClient = getGitHubClient(ghToken);
+
+    if (!ghClient) {
+        throw new Error("Login failed");
+    }
+
+    // Fetch uname from GH
+    return ghClient.query({
+        query: gql`
+            query {
+                viewer {
+                    name
+                }
+            }
+         `,
+    }).then(({ data: { viewer: { name: username } } }) => {
+        // Create or update in db
+        return UserModel.findOne({ username }).then(userDoc => {
+            if (userDoc) {
+                return {
+                    token: sign({
+                        id: userDoc.id,
+                        token: ghToken,
+                        username,
+                    }, process.env.API_JWT_SECRET),
+                    username,
+                    id: userDoc.id,
+                };
+            }
+
+            userDoc = new UserModel({ username });
+            return userDoc.save().then(userDoc => ({
+                token: sign({
+                    id: userDoc.id,
+                    token: ghToken,
+                    username,
+                }, process.env.API_JWT_SECRET),
+                username,
+                id: userDoc.id,
+            }));
         });
     });
 }

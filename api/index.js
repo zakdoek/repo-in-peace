@@ -32,11 +32,17 @@ export default function() {
         return;
     }
 
+    const jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
+
     // Set passport strategy for the api
     passport.use(new Strategy({
-        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+        jwtFromRequest,
+        passReqToCallback: true,
         secretOrKey: process.env.API_JWT_SECRET,
-    }, (payload, done) => done(null, payload)));
+    }, (req, payload, done) => done(null, {
+        profile: payload,
+        jwToken: jwtFromRequest(req),
+    })));
 
     // Create server instance
     const app = express();
