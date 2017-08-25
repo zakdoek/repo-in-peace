@@ -14,6 +14,7 @@ import passport from "passport";
 import { Strategy as GitHubStrategy } from "passport-github2";
 import cookieSession from "cookie-session";
 
+import getGitHubClient from "../lib/utils/getGitHubClient.js";
 import createStore from "../lib/redux/create.js";
 import App from "../lib/containers/App/App.js";
 
@@ -61,7 +62,6 @@ export default function() {
     app.use(cookieSession({
         name: "fs", // front session
         keys: [process.env.SESSION_SECRET],
-
         // Cookie Options
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
     }));
@@ -100,6 +100,8 @@ export default function() {
     // Logout
     app.get("/logout", (req, res) => {
         req.logout();
+        res.clearCookie("fs");
+        res.clearCookie("fs.sig");
         res.redirect("/");
     });
 
@@ -115,8 +117,6 @@ export default function() {
                 );
                 return;
             }
-
-            // TODO: Pass the user token console.log("User", req.user);
 
             // Create redux store, no data available yet
             const store = createStore();
@@ -136,7 +136,12 @@ export default function() {
 
             // Render full
             const component = (
-                <App store={store} client={client} routerProps={routerProps} />
+                <App
+                    store={store}
+                    client={client}
+                    ghClient={getGitHubClient(req.user || undefined)}
+                    routerProps={routerProps}
+                />
             );
 
             // Check context for different response code
@@ -144,11 +149,27 @@ export default function() {
                 res.redirect(routerContext.url);
                 return;
             }
+
+            // Populate extradata
+            const extraData = {};
+            if (req.user) {
+                extraData.ghToken = req.user;
+            }
+
+            // Create output component
+            const output = (
+                <Html
+                    component={component}
+                    store={store}
+                    extraData={extraData}
+                />
+            );
+
             // Send response
             // Inject GitHub token. Will be used to login into the GraphQl API
             res.send(
                 `<!doctype html>
-                ${renderToString(<Html component={component} store={store} />)}`
+                ${renderToString(output)}`
             );
         },
     );

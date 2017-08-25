@@ -12,6 +12,7 @@ import {
     addGraphQLSubscriptions,
 } from "subscriptions-transport-ws";
 
+import getGitHubClient from "../lib/utils/getGitHubClient.js";
 import createStore from "../lib/redux/create.js";
 import App from "../lib/containers/App/App.js";
 
@@ -26,8 +27,13 @@ const networkInterface = addGraphQLSubscriptions(
 
 const client = new ApolloClient({ networkInterface });
 
+const ghToken = window.__extraData ? window.__extraData.ghToken : undefined;
+
 // Content
 const target = document.getElementById("content");
 
 // Render
-ReactDOM.render(<App store={store} client={client} />, target);
+ReactDOM.render(
+    <App store={store} client={client} ghClient={getGitHubClient(ghToken)} />,
+    target,
+);

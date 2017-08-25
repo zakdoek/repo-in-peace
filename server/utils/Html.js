@@ -23,13 +23,14 @@ export default class Html extends Component {
     static propTypes = {
         component: PropTypes.element,
         store: PropTypes.object,
+        extraData: PropTypes.object,
     };
 
     /**
      * Render the page
      */
     render() {
-        const {component, store} = this.props;
+        const {component, store, extraData} = this.props;
         const content = component ? ReactDOM.renderToString(component) : "";
         const head = Helmet.rewind();
 
@@ -64,6 +65,11 @@ export default class Html extends Component {
                     {/* Save store data for rehydration */}
                     {store ? (
                         <script dangerouslySetInnerHTML={{__html: `window.__data=${serialize(store.getState())};`}} charSet="UTF-8" />
+                    ) : null}
+
+                    {/* Set extra data to be used when bootstrapping */}
+                    {extraData ? (
+                        <script dangerouslySetInnerHTML={{__html: `window.__extraData=${serialize(extraData)};`}} charSet="UTF-8" />
                     ) : null}
 
                     {/* Set the main script */}
