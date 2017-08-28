@@ -8,5 +8,5 @@ import UserModel from "../models/User.js";
  */
 export default {
     hasVoted: (root, _, { user }) => root.hasVoted(user),
-    owner: root => UserModel.findOne({ _id: root.owner }),
+    owner: root => UserModel.findById(root.owner),
 };

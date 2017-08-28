@@ -13,7 +13,7 @@ enum VoteType {
     DOWNVOTE
 }
 
-type Repo {
+type Repo {                 # Repo Model √
     id: ID!                 # Repo ID
     url: String!            # Repo url
     name: String!           # Name of the repo
@@ -25,7 +25,7 @@ type Repo {
     hasVoted: Boolean!      # If the user has voted
 }
 
-type User {
+type User {                 # User Model √
     id: ID!                 # User ID
     username: String!       # Normalized name
 }
@@ -37,13 +37,11 @@ type LoginResult {
     token: String!
 }
 
-# Will be embedded into the repo object
 type Vote {
-    id: ID!                 # Id (not neccesary, revisit)
-    user: User!             # User that created the vote
-    value: VoteType!        # The value of this vote
-    createdAt: DateTime!    # Created timestamp
-    updatedAt: DateTime!    # Last updated timestamp
+    id: ID!
+    value: VoteType!
+    user: User!
+    repo: Repo!
 }
 
 input VoteInput {

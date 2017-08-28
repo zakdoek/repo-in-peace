@@ -60,7 +60,7 @@ class Repo extends Model {
     _countVotesOfType(voteType) {
         return this.votes.reduce((accumulator, current) => {
             if (current.value === voteType) {
-                return accumulator++;
+                return ++accumulator;
             }
 
             return accumulator;
@@ -84,8 +84,19 @@ class Repo extends Model {
     /**
      * Test if a user has voted on this repo
      */
-    hasVoted(user) {
-        return !!this.votes.find(vote => user.id === vote.user.id);
+    hasVoted(userId) {
+        return !!this.votes.find(vote => userId === String(vote.user));
+    }
+
+    /**
+     * Vote
+     */
+    vote(userId, value) {
+        if (this.hasVoted(userId)) {
+            throw new Error("Already voted");
+        }
+
+        return this.votes.create({ user: userId, value });
     }
 }
 
