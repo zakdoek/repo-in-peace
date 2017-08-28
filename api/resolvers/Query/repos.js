@@ -6,9 +6,4 @@ import RepoModel from "../../models/Repo.js";
 /**
  * Repos query
  */
-export default () => RepoModel.find().populate("owner").populate({
-    path: "votes",
-    populate: {
-        path: "user",
-    },
-}).then(repos => repos);
+export default (_, { first, after }) => RepoModel.getPage(first, after);

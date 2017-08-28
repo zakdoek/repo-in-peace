@@ -5,6 +5,9 @@ import { makeExecutableSchema } from "graphql-tools";
 import resolvers from "./resolvers/index.js";
 
 const typeDefs = `
+
+scalar DateTime
+
 enum VoteType {
     UPVOTE
     DOWNVOTE
@@ -13,21 +16,18 @@ enum VoteType {
 type Repo {
     id: ID!                 # Repo ID
     url: String!            # Repo url
-    name: String            # Name of the repo, optional until fetch from github
-                            # api
+    name: String!           # Name of the repo
     owner: User!            # Creating user
-    upvotes: [Vote!]        # Upvoted by
-    downvotes: [Vote!]      # Downvoted by
-    createdAt:  Int!        # Time created
-    updatedAt:  Int!        # Time created
+    upvotesCount: Int!      # Upvoted by
+    downvotesCount: Int!    # Downvoted by
+    createdAt:  DateTime!   # Time created
+    updatedAt:  DateTime!   # Time created
+    hasVoted: Boolean!      # If the user has voted
 }
 
 type User {
     id: ID!                 # User ID
     username: String!       # Normalized name
-    repos: [Repo!]          # Repositories owned by self
-    upvoted: [Vote!]        # Upvoted repos
-    downvoted: [Vote!]      # Downvoted repos
 }
 
 # A helper to bundle token and user info
@@ -42,8 +42,8 @@ type Vote {
     id: ID!                 # Id (not neccesary, revisit)
     user: User!             # User that created the vote
     value: VoteType!        # The value of this vote
-    createdAt: Int!         # Created timestamp
-    updatedAt: Int!         # Last updated timestamp
+    createdAt: DateTime!    # Created timestamp
+    updatedAt: DateTime!    # Last updated timestamp
 }
 
 input VoteInput {
@@ -57,13 +57,13 @@ type Query {
 }
 
 type Mutation {
-    # Add a repo, user id comes from token
+    # Add a repo, user id comes from token √
     addRepo(url: String!): Repo
     # Vote (insert or update)
     vote(vote: VoteInput!): Vote
     # Clear own vote for value
     clearVote(repoId: ID!): Repo
-    # Create/Login user, return token
+    # Create/Login user, return token √
     login(ghToken: String!): LoginResult
 }
 

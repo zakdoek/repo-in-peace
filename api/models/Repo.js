@@ -1,6 +1,6 @@
 /* server/api/models/Repo.js */
 
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, Model } from "mongoose";
 
 
 /**
@@ -19,10 +19,75 @@ const VoteSchema = new Schema({
 const RepoSchema = new Schema({
     _id: { type: Schema.Types.ObjectId, auto: true },
     url: String,
-    name: String,
     owner: { type: Schema.Types.ObjectId, ref: "User" },
     votes: [VoteSchema],
 }, { timestamps: true });
 
 
-export default mongoose.model("Repo", RepoSchema, "repos");
+/**
+ * Repo model
+ */
+class Repo extends Model {
+    /**
+     * Get a page of repos
+     */
+    static async getPage(first, after) {
+
+        let query = this.find().sort("-createdAt");
+
+        if (after) {
+            const afterDoc = await this.findOne({ _id: after });
+            query = query.where("createdAt").lt(afterDoc.createdAt);
+        }
+
+        if (first) {
+            query = query.limit(first);
+        }
+
+        return query.populate("owner");
+    }
+
+    /**
+     * Repo name getter
+     */
+    get name() {
+        return this.url.split("/").pop();
+    }
+
+    /**
+     * Count the vote types
+     */
+    _countVotesOfType(voteType) {
+        return this.votes.reduce((accumulator, current) => {
+            if (current.value === voteType) {
+                return accumulator++;
+            }
+
+            return accumulator;
+        }, 0);
+    }
+
+    /**
+     * Get the number of upvotes
+     */
+    get upvotesCount() {
+        return this._countVotesOfType("UPVOTE");
+    }
+
+    /**
+     * Get the number of downvotes
+     */
+    get downvotesCount() {
+        return this._countVotesOfType("DOWNVOTE");
+    }
+
+    /**
+     * Test if a user has voted on this repo
+     */
+    hasVoted(user) {
+        return !!this.votes.find(vote => user.id === vote.user.id);
+    }
+}
+
+
+export default mongoose.model(Repo, RepoSchema, "repos");
