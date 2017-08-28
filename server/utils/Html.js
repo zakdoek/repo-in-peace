@@ -1,7 +1,6 @@
 /* helpers/Html.js */
 
 import React, { Component } from "react";
-import ReactDOM from "react-dom/server";
 import PropTypes from "prop-types";
 import serialize from "serialize-javascript";
 import Helmet from "react-helmet";
@@ -21,17 +20,20 @@ import Favicons from "./Favicons.js";
  */
 export default class Html extends Component {
     static propTypes = {
-        component: PropTypes.element,
+        content: PropTypes.string,
         store: PropTypes.object,
         extraData: PropTypes.object,
-    };
+    }
+
+    static defaultProps = {
+        content: "",
+    }
 
     /**
      * Render the page
      */
     render() {
-        const {component, store, extraData} = this.props;
-        const content = component ? ReactDOM.renderToString(component) : "";
+        const {content, store, extraData} = this.props;
         const head = Helmet.rewind();
 
         return (

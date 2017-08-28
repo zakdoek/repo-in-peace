@@ -8,13 +8,16 @@ import express from "express";
 import compression from "compression";
 import morgan from "morgan";
 import React from "react";
-import { renderToString } from "react-dom/server";
-import { ApolloClient, createNetworkInterface } from "react-apollo";
+import { renderToStaticMarkup } from "react-dom/server";
+import {
+    ApolloClient,
+    createNetworkInterface,
+    renderToStringWithData,
+} from "react-apollo";
 import passport from "passport";
 import { Strategy as GitHubStrategy } from "passport-github2";
 import cookieSession from "cookie-session";
 
-import getGitHubClient from "../lib/utils/getGitHubClient.js";
 import createStore from "../lib/redux/create.js";
 import App from "../lib/containers/App/App.js";
 
@@ -116,19 +119,22 @@ export default function() {
             if (__DISABLE_SSR__) {
                 res.send(
                     `<!doctype html>\n
-                    ${renderToString(<Html />)}`
+                    ${renderToStaticMarkup(<Html />)}`
                 );
                 return;
             }
-
-            // Create redux store, no data available yet
-            const store = createStore();
 
             // Create client
             const networkInterface = createNetworkInterface({
                 uri: process.env.API_URL,
             });
-            const client = new ApolloClient({ networkInterface });
+            const client = new ApolloClient({
+                networkInterface,
+                ssrMode: true,
+            });
+
+            // Create redux store, no data available yet
+            const store = createStore(client);
 
             // Pass request to App container
             const routerContext = {};
@@ -142,8 +148,7 @@ export default function() {
                 <App
                     store={store}
                     client={client}
-                    ghClient={getGitHubClient(
-                        req.user ? req.user.token || undefined : undefined)}
+                    ghUser={req.user}
                     routerProps={routerProps}
                 />
             );
@@ -160,21 +165,23 @@ export default function() {
                 extraData.ghUser = req.user;
             }
 
-            // Create output component
-            const output = (
-                <Html
-                    component={component}
-                    store={store}
-                    extraData={extraData}
-                />
-            );
+            renderToStringWithData(component).then(content => {
+                // Create output component
+                const output = (
+                    <Html
+                        content={content}
+                        store={store}
+                        extraData={extraData}
+                    />
+                );
 
-            // Send response
-            // Inject GitHub token. Will be used to login into the GraphQl API
-            res.send(
-                `<!doctype html>
-                ${renderToString(output)}`
-            );
+                // Send response
+                // Inject GitHub token. Will be used to login into the GraphQl API
+                res.send(
+                    `<!doctype html>
+                    ${renderToStaticMarkup(output)}`
+                );
+            });
         },
     );
 
