@@ -25,6 +25,11 @@ type Repo {                 # Repo Model
     hasVoted: Boolean!      # If the user has voted
 }
 
+type RepoResult {
+    nodes: [Repo!]!
+    cursor: ID!
+}
+
 type User {                 # User Model
     id: ID!                 # User ID
     username: String!       # Normalized name
@@ -50,8 +55,8 @@ input VoteInput {
 }
 
 type Query {
-    repos: [Repo!]!         # List of all repos
-    viewer: User            # The current user
+    repos(first: Int, after: String): RepoResult!   # List of all repos
+    viewer: User                                    # The current user
 }
 
 type Mutation {
