@@ -21,6 +21,25 @@ const networkInterface = addGraphQLSubscriptions(
     new SubscriptionClient(window.__ws, { reconnect: true }),
 );
 
+networkInterface.use([
+    {
+        applyMiddleware(req, next) {
+            if (!window.__extraData.apiToken) {
+                return next();
+            }
+
+            // Is logged in, augment request header
+            req.options.headers = req.options.headers || {};
+
+            // Set bearer token
+            req.options.headers.authorization =
+                `bearer ${window.__extraData.apiToken}`;
+
+            next();
+        },
+    },
+]);
+
 const client = new ApolloClient({ networkInterface });
 
 // Create store

@@ -1,12 +1,23 @@
 /* conf/webpack.config.babel.js */
 
 import path from "path";
-import webpack from "webpack";
+import webpack, { DefinePlugin } from "webpack";
 import { is_external } from "universal-webpack/build/server configuration.js";
 
 
 const DEVELOPMENT = process.env.NODE_ENV != "production";
 
+const __CLIENT__ = false;
+const __SERVER__ = true;
+const __DEVELOPMENT__ = process.env.NODE_ENV != "production";
+const __DISABLE_SSR__ = process.env.DISABLE_SSR || false;
+
+const environmentPlugin = new DefinePlugin({
+    __CLIENT__,
+    __SERVER__,
+    __DEVELOPMENT__,
+    __DISABLE_SSR__,
+});
 
 const configuration = {
     target: "node",
@@ -61,6 +72,7 @@ const configuration = {
     ],
     plugins: [
         new webpack.optimize.LimitChunkCountPlugin({ maxChunks: 1 }),
+        environmentPlugin,
     ],
 };
 

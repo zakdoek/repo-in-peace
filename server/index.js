@@ -13,6 +13,7 @@ import {
     ApolloClient,
     createNetworkInterface,
     renderToStringWithData,
+    gql,
 } from "react-apollo";
 import passport from "passport";
 import { Strategy as GitHubStrategy } from "passport-github2";
@@ -50,7 +51,8 @@ export default function() {
     }, (accessToken, _, { username }, done) => done(null, {
         token: accessToken,
         username,
-    })));
+    }),
+    ));
 
     // Create server instance
     const app = express();
@@ -82,7 +84,37 @@ export default function() {
         passport.authenticate("github", {
             failureRedirect: "/",
         }),
-        (_, res) => res.redirect("/"),
+        (req, res) => {
+            // Auth with api add add to session
+
+            // Create client
+            const networkInterface = createNetworkInterface({
+                uri: process.env.API_URL,
+            });
+
+            const client = new ApolloClient({
+                networkInterface,
+                ssrMode: true,
+            });
+
+            client.mutate({
+                mutation: gql`
+                mutation Login($ghToken: String!) {
+                    login(ghToken: $ghToken) {
+                        token
+                    }
+                }
+                `,
+                variables: {
+                    ghToken: req.user.token,
+                }
+            }).then(({ data: { login: { token } } }) => {
+                // Set session
+                req.session.apiToken = token;
+
+                return res.redirect("/");
+            });
+        },
     );
 
     // Login
@@ -106,8 +138,11 @@ export default function() {
     // Logout
     app.get("/logout", (req, res) => {
         req.logout();
+
+        // Clear session
         res.clearCookie("fs");
         res.clearCookie("fs.sig");
+
         res.redirect("/");
     });
 
@@ -128,6 +163,28 @@ export default function() {
             const networkInterface = createNetworkInterface({
                 uri: process.env.API_URL,
             });
+
+            // Add auth if possible
+            networkInterface.use([
+                {
+                    applyMiddleware(cReq, next) {
+                        // Test if logged in
+                        if (!req.session.apiToken) {
+                            return next();
+                        }
+
+                        // Is logged in, augment request header
+                        cReq.options.headers = cReq.options.headers || {};
+
+                        // Set bearer token
+                        cReq.options.headers.authorization =
+                            `bearer ${req.session.apiToken}`;
+
+                        next();
+                    },
+                },
+            ]);
+
             const client = new ApolloClient({
                 networkInterface,
                 ssrMode: true,
@@ -164,8 +221,14 @@ export default function() {
             if (req.user) {
                 extraData.ghUser = req.user;
             }
+            if (req.session.apiToken) {
+                extraData.apiToken = req.session.apiToken;
+            }
 
             renderToStringWithData(component).then(content => {
+
+                console.log(store.getState());
+
                 // Create output component
                 const output = (
                     <Html

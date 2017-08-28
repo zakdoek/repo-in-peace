@@ -24,7 +24,6 @@ type Repo {
 
 type User {
     id: ID!                 # User ID
-    name: String!           # User name
     username: String!       # Normalized name
     repos: [Repo!]          # Repositories owned by self
     upvoted: [Vote!]        # Upvoted repos
@@ -54,6 +53,7 @@ input VoteInput {
 
 type Query {
     repos: [Repo!]!         # List of all repos
+    viewer: User            # The current user
 }
 
 type Mutation {
