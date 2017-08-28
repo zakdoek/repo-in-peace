@@ -13,7 +13,7 @@ enum VoteType {
     DOWNVOTE
 }
 
-type Repo {                 # Repo Model √
+type Repo {                 # Repo Model
     id: ID!                 # Repo ID
     url: String!            # Repo url
     name: String!           # Name of the repo
@@ -25,7 +25,7 @@ type Repo {                 # Repo Model √
     hasVoted: Boolean!      # If the user has voted
 }
 
-type User {                 # User Model √
+type User {                 # User Model
     id: ID!                 # User ID
     username: String!       # Normalized name
 }
@@ -55,13 +55,13 @@ type Query {
 }
 
 type Mutation {
-    # Add a repo, user id comes from token √
+    # Add a repo, user id comes from token
     addRepo(url: String!): Repo
     # Vote (insert or update)
     vote(vote: VoteInput!): Vote
-    # Clear own vote for value
-    clearVote(repoId: ID!): Repo
-    # Create/Login user, return token √
+    # Clear own vote for value TODO
+    # clearVote(repoId: ID!): Repo
+    # Create/Login user, return token
     login(ghToken: String!): LoginResult
 }
 
