@@ -6,6 +6,9 @@ import getGitHubClient from "../../../lib/utils/getGitHubClient.js";
 
 import RepoModel from "../../models/Repo.js";
 
+import { pubsub } from "../index.js";
+import { REPO_ADDED } from "../Subscription/repoAdded.js";
+
 
 const CHECK_URL = gql`
 query CheckGithubUrl($owner: String!, $name: String!) {
@@ -54,7 +57,10 @@ export default function addRepo(_, { url }, { user }) {
                 url,
                 owner: user.profile.id,
             });
-            return newRepo.save().then(repoDoc => repoDoc);
+            return newRepo.save().then(repoDoc => {
+                pubsub.publish(REPO_ADDED, repoDoc.id);
+                return repoDoc;
+            });
         });
     });
 }

@@ -93,9 +93,9 @@ export default function() {
 
             // Set up the WebSocket for handling GraphQL subscriptions
             new SubscriptionServer({
+                schema,
                 execute,
                 subscribe,
-                schema
             }, {
                 server: ws,
                 path: "/subscriptions",
