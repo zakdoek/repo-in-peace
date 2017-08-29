@@ -1,5 +1,7 @@
 /* lib/components/Repo/Repo.scss */
 
+@import "../../utils/variables.scss";
+
 .repo {
     margin: 1rem 0;
 }
@@ -7,4 +9,19 @@
 .votes {
     margin: 1rem 0;
     text-align: center;
+    cursor: default;
+}
+
+.enabledButton {
+    cursor: pointer;
+}
+
+.disabledButton {
+    &,
+    &:hover,
+    &:focus {
+        color: $grey;
+        cursor: default;
+        text-decoration: none;
+    }
 }
