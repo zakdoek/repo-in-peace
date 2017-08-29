@@ -1,0 +1,8 @@
+/* lib/components/Header/Header.js */
+
+@import "../../utils/variables.scss";
+
+.header {
+    background-color: $header-bg;
+    padding: 2rem 0;
+}

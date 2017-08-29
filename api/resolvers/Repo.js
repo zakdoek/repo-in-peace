@@ -7,6 +7,7 @@ import UserModel from "../models/User.js";
  * Repo resolvers
  */
 export default {
-    hasVoted: (root, _, { user }) => root.hasVoted(user),
+    hasVoted: (root, _, { user }) => user.profile ?
+        root.hasVoted(user.profile.id) : false,
     owner: root => UserModel.findById(root.owner),
 };

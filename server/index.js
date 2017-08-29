@@ -141,6 +141,8 @@ export default function() {
         req.logout();
 
         // Clear session
+        req.session.passport = null;
+        req.session.apiToken = null;
         res.clearCookie("fs");
         res.clearCookie("fs.sig");
 
