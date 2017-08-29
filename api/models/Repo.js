@@ -41,10 +41,24 @@ class Repo extends Model {
         }
 
         if (first) {
-            query = query.limit(first);
+            query = query.limit(first + 1);
         }
 
-        return query.populate("owner");
+        return query.populate("owner").then(repos => {
+            const page = {
+                hasNextPage: repos.length === first + 1,
+            };
+
+            if (page.hasNextPage) {
+                page.nodes = repos.slice(0, -1);
+                page.cursor = page.nodes[page.nodes.length - 1].id;
+            } else {
+                page.nodes = repos;
+                page.cursor = null;
+            }
+
+            return page;
+        });
     }
 
     /**

@@ -27,7 +27,8 @@ type Repo {                 # Repo Model
 
 type RepoResult {
     nodes: [Repo!]!
-    cursor: ID!
+    cursor: ID
+    hasNextPage: Boolean!
 }
 
 type User {                 # User Model
